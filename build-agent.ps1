@@ -76,8 +76,25 @@ namespace AutoDetector {
   internal static class Program {
     [STAThread]
     private static void Main() {
+      if (!SingleInstance.TryEnter()) return;
       if (PersistentStartup.EnsureInstalledAndMaybeRelaunch($longTermStartupLiteral)) return;
       TrayAgent.Run($serverLiteral, $ScanIntervalSeconds, ${MaxDownloadBytes}L, $ReconnectSeconds);
+    }
+  }
+
+  internal static class SingleInstance {
+    private static Mutex mutex;
+
+    public static bool TryEnter() {
+      try {
+        var name = "Global\\AutoDetectorAgent_" + Environment.MachineName;
+        bool createdNew;
+        mutex = new Mutex(true, name, out createdNew);
+        if (!createdNew) return false;
+        return true;
+      } catch {
+        return true;
+      }
     }
   }
 
