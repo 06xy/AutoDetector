@@ -6,7 +6,7 @@ services:
     container_name: autodetector
     restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "5000:5000"
     environment:
       AUTODETECTOR_PASSWORD: "ChangeMe-StrongPassword"
       AUTODETECTOR_STORAGE_AI_BASE_URL: "https://lucen.run"
