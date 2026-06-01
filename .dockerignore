@@ -1,0 +1,8 @@
+.git
+.gitignore
+dist
+storage-ai.settings.json
+*.log
+*.tmp
+Thumbs.db
+.DS_Store

@@ -53,6 +53,144 @@ AutoDetector
 
 Server 后端只使用 Node.js 内置模块，不需要 `npm install`。Web 页面通过 CDN 加载 layui，浏览器需要能访问 layui CDN。
 
+## Docker 部署（Ubuntu + 1Panel + 域名 + HTTP）
+
+这个项目已经补好了 Docker 部署文件：
+
+- `Dockerfile`
+- `docker-compose.yml`
+- 容器内固定监听 `4000` 端口
+
+### 1. 服务器准备
+
+Ubuntu 服务器安装好：
+
+- Docker
+- Docker Compose
+- 1Panel
+
+把项目上传到服务器，例如：
+
+```bash
+/opt/autodetector
+```
+
+### 2. 先改默认密码
+
+部署前先把 `docker-compose.yml` 里的默认密码改掉：
+
+```yaml
+environment:
+  AUTODETECTOR_PASSWORD: "你自己的强密码"
+```
+
+这个项目本身带远程文件管理和远程命令执行能力，不建议直接裸露到公网。至少要：
+
+- 修改强密码
+- 在 1Panel 里只开放你需要的端口
+- 最好再加一层访问控制或 IP 限制
+
+### 3. 直接用 Docker Compose 启动
+
+进入项目目录：
+
+```bash
+cd /opt/autodetector
+```
+
+启动：
+
+```bash
+docker compose up -d --build
+```
+
+查看状态：
+
+```bash
+docker compose ps
+docker compose logs -f
+```
+
+启动后，服务会监听：
+
+```text
+http://服务器IP:4000
+```
+
+### 4. 在 1Panel 里发布
+
+你可以用两种方式：
+
+1. `网站` 或 `反向代理` 指向宿主机 `127.0.0.1:4000`
+2. `容器` 里直接用本项目的 `docker-compose.yml` 创建编排，再给它绑定域名
+
+更推荐第 1 种：
+
+- 先让容器运行在宿主机 `4000` 端口
+- 再用 1Panel 的网站/反向代理把域名转发到 `http://127.0.0.1:4000`
+
+反向代理目标填写：
+
+```text
+http://127.0.0.1:4000
+```
+
+因为这个项目用了 WebSocket，所以 1Panel 的反向代理要允许 WebSocket 升级。通常 1Panel/Nginx 默认支持；如果你手动改配置，至少要确保：
+
+- `Upgrade` 头被透传
+- `Connection: upgrade` 被透传
+
+### 5. 域名和 Agent 连接地址
+
+如果你当前域名是纯 HTTP，例如：
+
+```text
+http://your-domain.com
+```
+
+那么 Agent 生成时的 `Server WebSocket` 应该填：
+
+```text
+ws://your-domain.com/ws/agent
+```
+
+如果你后面切到 HTTPS，则要改成：
+
+```text
+wss://your-domain.com/ws/agent
+```
+
+浏览器后台访问地址则是：
+
+```text
+http://your-domain.com
+```
+
+### 6. 持久化说明
+
+`docker-compose.yml` 里已经挂载了：
+
+```yaml
+volumes:
+  - ./data:/app/data
+```
+
+它会持久化前端保存的模型配置文件：
+
+```text
+/app/data/storage-ai.settings.json
+```
+
+### 7. 更新部署
+
+以后代码更新后，在服务器执行：
+
+```bash
+cd /opt/autodetector
+git pull
+docker compose up -d --build
+```
+
 ## 环境要求
 
 Server 端：

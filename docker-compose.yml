@@ -1,0 +1,17 @@
+services:
+  autodetector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autodetector
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      AUTODETECTOR_PASSWORD: "ChangeMe-StrongPassword"
+      AUTODETECTOR_STORAGE_AI_BASE_URL: "https://lucen.run"
+      AUTODETECTOR_STORAGE_AI_MODEL: "gpt-5.4"
+      AUTODETECTOR_STORAGE_AI_API_KEY: ""
+      AUTODETECTOR_STORAGE_AI_TIMEOUT_MS: "45000"
+    volumes:
+      - ./data:/app/data
